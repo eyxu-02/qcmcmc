@@ -2,7 +2,7 @@ import qforte as qf
 from qforte import *
 import scipy as sp
 import numpy as np
-from circ_parsing import *
+from qcmcmc.circ_parsing import *
 
 def cost_function( circuit, args ):
 
@@ -11,8 +11,9 @@ def cost_function( circuit, args ):
     component_args = args[2]
 
     cost = 0
-    for i in range(components):
-        cost += components[i](circuit, component_args[i]) * weights[i]
+    for i in range(len(components)):
+        component = components[i]
+        cost += component(circuit, component_args[i]) * weights[i]
 
     return cost
 
@@ -20,7 +21,6 @@ def energy( circuit, component_args):
 
     nqubits = component_args[0]
     hamiltonian = component_args[1]
-
     circ = compress_circ(circuit)
     qf_circ = to_qf_circ(circ)
     qcomp = qf.Computer(nqubits)

@@ -41,7 +41,7 @@ class MCMC:
                 row.append(current_circ)
                 writer.writerow(row)
 
-            if cost_diff <= 0 or self.rng.rand() < sp.special.expit(-1*cost_diff / self.T):
+            if cost_diff <= 0 or self.rng.random() < sp.special.expit(-1*cost_diff / self.T):
                 current_circ = next_circ
 
         return candidates
@@ -126,7 +126,7 @@ class MCMC:
 
         gate = []
 
-        rand_num = self.rng.rand()
+        rand_num = self.rng.random()
 
         if rand_num < .125:
             gate.append(self.rng.choice(MCMC.eq_classes[0]))
@@ -146,9 +146,11 @@ class MCMC:
                 gate.append(operand)
             return gate
         
-    def random_move(self, circuit):
+    def random_move(self, circ):
 
-        rand_num = self.rng.rand()
+        circuit = copy.deepcopy(circ)
+
+        rand_num = self.rng.random()
         if rand_num < .5:
             circ = self.operand(circuit)
         elif rand_num < .66:
@@ -158,4 +160,4 @@ class MCMC:
         else:
             circ = self.instruction(circuit)
 
-        return circ
+        return circuit
