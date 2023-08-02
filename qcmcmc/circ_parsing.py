@@ -6,11 +6,16 @@ import numpy as np
 def to_qf_circ( compressed_circ ):
         
         qf_circ = qf.Circuit()
+        '''
         for i in compressed_circ:
             if len(i[1]) == 1:
                 qf_circ.add_gate(qf.gate(i[0], i[1][0],i[1][0], i[2]))
             elif len(i[1]) == 2:
                 qf_circ.add_gate(qf.gate(i[0], i[1][0],i[1][1]))
+        '''
+        for i in compressed_circ:
+            if i[0] != "I":
+                qf_circ.add_gate(qf.gate(i[0], i[1][0],i[1][0]))
         
         return qf_circ
 
@@ -48,7 +53,6 @@ def compress_circ( circ ):
                 circuit.pop(0)
         else:
             circuit.pop(0)
-
     return compressed_circ
 
 def compress_rotations( gate_type, index, signs):

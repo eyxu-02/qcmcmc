@@ -8,16 +8,31 @@ import csv
 
 class MCMC:
 
-    eq_classes = [["I"], ["+Rx","-Rx","+Ry","-Ry","+Rz","-Rz"], ["CNOT"]]
-
-    def __init__(self, temp, num_qubits, hamiltonians, rng_seed ):
+    def __init__(self, temp, num_qubits, hamiltonians, rng_seed, **eq_classes):
         
         self.T = temp
         self.nqubits = num_qubits
         self.H = hamiltonians
         self.rng = np.random.default_rng(rng_seed)
+        self.eq_classes = []
+        for i in eq_classes:
+            self.eq_classes.append(MCMC.get_eq_class(i))
+        self.all_gates = []
+        for i in eq_classes:
+            for j in i:
+                self.all_gates.append(j)
+
+    def get_eq_class(i):
+        if i == "Identity":
+            return ["I"]
+        elif i == "HST":
+            return ["H","S","T"]
+        elif i == "Rotations":
+            return ["+Rx","-Rx","+Ry","-Ry","+Rz","-Rz"]
+        elif i == "CNOT":
+            return ["CNOT"]
         
-    def mcmc( self, iters, starting_circ, threshold, cost_func_args, output_file ):
+    def mcmc( self, iters, starting_circ, threshold, *cost_func_args, output_file ):
 
         current_circ = starting_circ
         candidates = []
@@ -40,7 +55,11 @@ class MCMC:
                        
                 row.append(current_circ)
                 writer.writerow(row)
-
+            '''
+            if len(candidates) > 0:
+                break
+            '''
+                
             if cost_diff <= 0 or self.rng.random() < sp.special.expit(-1*cost_diff / self.T):
                 current_circ = next_circ
 
@@ -51,26 +70,25 @@ class MCMC:
         indices = []
 
         for i in range(len(circuit)):
-            if MCMC.eq_classes[1].count(circuit[i][0]) > 0:
+            if circuit[i][0] != "CNOT" and circuit[i][0] != "I":
                 indices.append(i)
         
         if len(indices) > 0:
             index = self.rng.choice(indices)
-            replacement = self.rng.choice(MCMC.eq_classes[1])
+            replacement = self.rng.choice(self.all_gates)
 
-            if replacement != circuit[index][0]:
-                circuit[index][0] = replacement
-            else:
-                while replacement == circuit[index][0]:
-                    replacement = self.rng.choice(MCMC.eq_classes[1])
-                circuit[index][0] = replacement  
+            while replacement == "CNOT" or replacement == "I" or replacement == circuit[index][0]:
+                replacement = self.rng.choice(self.all_gates)
+
+            circuit[index][0] = replacement
+
         return circuit   
     
     def operand(self, circuit):
         indices = []
 
         for i in range(len(circuit)):
-            if MCMC.eq_classes[1].count(circuit[i][0]) > 0 or MCMC.eq_classes[2].count(circuit[i][0]) > 0:
+            if circuit[i][0] != "I":
                 indices.append(i)
         
         if len(indices) > 0:
@@ -129,21 +147,22 @@ class MCMC:
         rand_num = self.rng.random()
 
         if rand_num < .125:
-            gate.append(self.rng.choice(MCMC.eq_classes[0]))
-            return gate
-        elif rand_num < .875:
-            gate.append(self.rng.choice(MCMC.eq_classes[1]))
-            gate.append([self.rng.choice(self.nqubits)])
+            gate.append("I")
             return gate
         else:
-            gate.append(self.rng.choice(MCMC.eq_classes[2]))
-            operand = [self.rng.choice(self.nqubits), self.rng.choice(self.nqubits)]
-            if operand[0] != operand[1]:
-                gate.append(operand)
+            gate.append(self.rng.choice(self.all_gates))
+
+            if gate[0] == "CNOT":
+                operand = [self.rng.choice(self.nqubits), self.rng.choice(self.nqubits)]
+                if operand[0] != operand[1]:
+                    gate.append(operand)
+                else:
+                    while operand[0] == operand[1]:
+                        operand = [self.rng.choice(self.nqubits), self.rng.choice(self.nqubits)]
+                    gate.append(operand)
             else:
-                while operand[0] == operand[1]:
-                    operand = [self.rng.choice(self.nqubits), self.rng.choice(self.nqubits)]
-                gate.append(operand)
+                gate.append([self.rng.choice(self.nqubits)])
+
             return gate
         
     def random_move(self, circ):

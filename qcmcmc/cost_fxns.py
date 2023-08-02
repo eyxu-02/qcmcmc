@@ -21,8 +21,9 @@ def energy( circuit, component_args):
 
     nqubits = component_args[0]
     hamiltonian = component_args[1]
-    circ = compress_circ(circuit)
-    qf_circ = to_qf_circ(circ)
+    #circ = compress_circ(circuit)
+    #revert to_qf_circ argument to circ
+    qf_circ = to_qf_circ(circuit)
     qcomp = qf.Computer(nqubits)
     qcomp.apply_circuit(qf_circ)
 
@@ -31,7 +32,8 @@ def energy( circuit, component_args):
 def depth( circ, component_args ):
 
     nqubits = component_args[0]
-    circuit = compress_circ(circ)
+    #circuit = compress_circ(circ)
+    circuit = circ
 
     qubit_stack = []
     depth = 0
@@ -56,3 +58,16 @@ def depth( circ, component_args ):
     depth += max(qubit_stack)
 
     return depth
+
+def fidelity( circuit, component_args):
+
+    nqubits = component_args[0]
+    ref = component_args[1]
+    circ = compress_circ(circuit)
+    qf_circ = to_qf_circ(circ)
+
+    overlap = qf.compute_operator_matrix_element(nqubits, ref, qf_circ, None)
+
+    fidelity = overlap**2
+
+    return -fidelity
