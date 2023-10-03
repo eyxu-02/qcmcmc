@@ -21,9 +21,9 @@ def energy( circuit, component_args):
 
     nqubits = component_args[0]
     hamiltonian = component_args[1]
-    #circ = compress_circ(circuit)
+    circ = compress_circ(circuit)
     #revert to_qf_circ argument to circ
-    qf_circ = to_qf_circ(circuit)
+    qf_circ = to_qf_circ(circ)
     qcomp = qf.Computer(nqubits)
     qcomp.apply_circuit(qf_circ)
 
@@ -32,7 +32,7 @@ def energy( circuit, component_args):
 def depth( circ, component_args ):
 
     nqubits = component_args[0]
-    #circuit = compress_circ(circ)
+    circuit = compress_circ(circ)
     circuit = circ
 
     qubit_stack = []
