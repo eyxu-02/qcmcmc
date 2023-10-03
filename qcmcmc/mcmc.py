@@ -8,7 +8,7 @@ import csv
 
 class MCMC:
 
-    def __init__(self, temp, num_qubits, hamiltonians, rng_seed, **eq_classes):
+    def __init__(self, temp, num_qubits, hamiltonians, rng_seed, eq_classes):
         
         self.T = temp
         self.nqubits = num_qubits
@@ -18,7 +18,7 @@ class MCMC:
         for i in eq_classes:
             self.eq_classes.append(MCMC.get_eq_class(i))
         self.all_gates = []
-        for i in eq_classes:
+        for i in self.eq_classes:
             for j in i:
                 self.all_gates.append(j)
 
@@ -32,7 +32,7 @@ class MCMC:
         elif i == "CNOT":
             return ["CNOT"]
         
-    def mcmc( self, iters, starting_circ, threshold, *cost_func_args, output_file ):
+    def mcmc( self, iters, starting_circ, threshold, cost_func_args, output_file ):
 
         current_circ = starting_circ
         candidates = []
@@ -55,10 +55,9 @@ class MCMC:
                        
                 row.append(current_circ)
                 writer.writerow(row)
-            '''
+            
             if len(candidates) > 0:
                 break
-            '''
                 
             if cost_diff <= 0 or self.rng.random() < sp.special.expit(-1*cost_diff / self.T):
                 current_circ = next_circ
