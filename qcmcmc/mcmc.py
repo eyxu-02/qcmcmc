@@ -37,30 +37,40 @@ class MCMC:
         current_circ = starting_circ
         candidates = []
 
-        for i in range(iters):
-            next_circ = self.random_move(current_circ)
-            current_cost = cost_function(current_circ, cost_func_args )
-            next_cost = cost_function(next_circ, cost_func_args )
-            cost_diff = next_cost - current_cost
+        print("Iter: Depth: H_Energy: Ha_Energy: Hb_Energy: ", flush=True)
 
-            if current_cost < threshold:
-                candidates.append(current_circ)
-            
-            with open(output_file, mode="a",newline='') as csvfile:
+        with open(output_file, mode="a",newline='') as csvfile:
+
+            for i in range(iters):
+                next_circ = self.random_move(current_circ)
+                current_cost = cost_function(current_circ, cost_func_args )
+                next_cost = cost_function(next_circ, cost_func_args )
+                cost_diff = next_cost - current_cost
+
+                if current_cost < threshold:
+                    candidates.append(current_circ)
+                
+
                 writer = csv.writer(csvfile, delimiter=',')
                 row = [i, depth(current_circ, [self.nqubits])]
 
                 for j in self.H:
                     row.append( energy(current_circ, [self.nqubits, j]) )
-                       
+                
+                string = ""
+                for i in row:
+                    string += f"{i} "
+
+                print(string, flush=True)
+
                 row.append(current_circ)
                 writer.writerow(row)
             
-            if len(candidates) > 0:
-                break
-                
-            if cost_diff <= 0 or self.rng.random() < sp.special.expit(-1*cost_diff / self.T):
-                current_circ = next_circ
+                if len(candidates) > 0:
+                    break
+                    
+                if cost_diff <= 0 or self.rng.random() < sp.special.expit(-1*cost_diff / self.T):
+                    current_circ = next_circ
 
         return candidates
             
