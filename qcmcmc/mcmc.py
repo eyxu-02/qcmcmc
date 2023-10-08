@@ -49,7 +49,8 @@ class MCMC:
 
                 if current_cost < threshold:
                     candidates.append(current_circ)
-                
+                if i == iters - 1 and len(cost_func_args[0] > 1):
+                    candidates.append(current_circ)              
 
                 writer = csv.writer(csvfile, delimiter=',')
                 row = [i, depth(current_circ, [self.nqubits])]
